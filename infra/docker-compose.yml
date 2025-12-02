@@ -1,0 +1,168 @@
+services:
+
+  consul:
+    image: hashicorp/consul:latest
+    container_name: consul
+    restart: always
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0
+    networks:
+      - indbank-net
+
+  indbank-postgres:
+    image: postgres:15
+    container_name: indbank-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: indbank
+      POSTGRES_PASSWORD: indbank
+      POSTGRES_DB: indbank
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - indbank-net
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: indbank-prometheus
+    restart: always
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    networks:
+      - indbank-net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: indbank-grafana
+    restart: always
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    networks:
+      - indbank-net
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.49
+    container_name: indbank-jaeger
+    restart: always
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+      - "4317:4317"
+      - "4318:4318"
+    networks:
+      - indbank-net
+
+  indbank-java:
+    build:
+      context: ../indbank-java
+    container_name: indbank-java
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://indbank-postgres:5432/indbank
+      SPRING_DATASOURCE_USERNAME: indbank
+      SPRING_DATASOURCE_PASSWORD: indbank
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    ports:
+      - "8080:8080"
+    depends_on:
+      - indbank-postgres
+      - consul
+      - kafka
+    networks:
+      - indbank-net
+
+  indbank-sms-service:
+    build:
+      context: ../indbank-sms-service
+    container_name: indbank-sms-service
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://indbank-postgres:5432/indbank
+      SPRING_DATASOURCE_USERNAME: indbank
+      SPRING_DATASOURCE_PASSWORD: indbank
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_KAFKA_CONSUMER_GROUP_ID: sms-service-group
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+    ports:
+      - "8082:8082"
+    depends_on:
+      - kafka
+      - indbank-postgres
+      - consul
+    networks:
+      - indbank-net
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - indbank-net
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+    restart: always
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    networks:
+      - indbank-net
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    restart: always
+    environment:
+      KAFKA_CLUSTERS_0_NAME: indbank-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    ports:
+      - "8085:8080"
+    depends_on:
+      - kafka
+    networks:
+      - indbank-net
+
+  indbank-sms-ui:
+    build:
+      context: ../indbank-sms-ui
+    container_name: indbank-sms-ui
+    restart: always
+    ports:
+      - "8089:80"
+    depends_on:
+      - indbank-sms-service
+    networks:
+      - indbank-net
+
+volumes:
+  pgdata:
+
+networks:
+  indbank-net:

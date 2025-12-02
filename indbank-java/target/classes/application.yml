@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: indbank-java
+
+  datasource:
+    url: jdbc:postgresql://indbank-postgres:5432/indbank
+    username: indbank
+    password: indbank
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  kafka:
+    bootstrap-servers: kafka:9092
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+    consumer:
+      group-id: indbank-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+    topic:
+      name: transactions
+
+    admin:
+      # Let Spring create the topic if it does not exist
+      auto-create-topics: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+otel:
+  exporter:
+    otlp:
+      endpoint: http://jaeger:4318

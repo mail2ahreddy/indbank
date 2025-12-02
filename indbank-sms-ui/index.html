@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IndBank SMS Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+<h2>IndBank SMS Notifications</h2>
+
+<div id="smsContainer"></div>
+
+<hr/>
+
+<h3>Monitoring</h3>
+
+<div class="obs-buttons">
+  <button onclick="openGrafana()">Grafana Metrics</button>
+  <button onclick="openJaeger()">Jaeger Traces</button>
+  <button onclick="openKafkaUI()">Kafka UI</button>
+  <button onclick="loadSmsLogs()">View SMS Logs</button>
+</div>
+
+<pre id="smsLogs"></pre>
+
+<script src="scripts.js"></script>
+
+</body>
+</html>
