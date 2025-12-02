@@ -23,3 +23,20 @@ log/
 # local docker / data
 loki-data/
 pgdata/
+# maven / java
+target/
+*.jar
+*.war
+*.class
+
+# IDE
+.idea/
+*.iml
+
+# logs
+*.log
+log/
+
+# local docker / data
+loki-data/
+pgdata/
