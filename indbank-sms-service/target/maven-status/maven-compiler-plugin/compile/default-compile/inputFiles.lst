@@ -1,7 +1,0 @@
-/home/haranadha/indbank/indbank-sms-service/src/main/java/com/indbank/sms/SmsService.java
-/home/haranadha/indbank/indbank-sms-service/src/main/java/com/indbank/sms/config/CorsConfig.java
-/home/haranadha/indbank/indbank-sms-service/src/main/java/com/indbank/sms/SmsServiceApplication.java
-/home/haranadha/indbank/indbank-sms-service/src/main/java/com/indbank/sms/TransactionEventListener.java
-/home/haranadha/indbank/indbank-sms-service/src/main/java/com/indbank/sms/SmsController.java
-/home/haranadha/indbank/indbank-sms-service/src/main/java/com/indbank/sms/SmsLogRepository.java
-/home/haranadha/indbank/indbank-sms-service/src/main/java/com/indbank/sms/SmsLog.java
