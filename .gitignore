@@ -6,3 +6,20 @@ target/
 log/
 *.log
 loki-data/
+# maven / java
+target/
+*.jar
+*.war
+*.class
+
+# IDE
+.idea/
+*.iml
+
+# logs
+*.log
+log/
+
+# local docker / data
+loki-data/
+pgdata/
